@@ -1,12 +1,13 @@
 'use client';
 
 import React, { useState, useRef } from 'react';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import IntroAnimation, { IntroPhase } from '@/components/IntroAnimation';
 import Navbar from '@/components/Navbar';
 import Hero from '@/components/Hero';
 import PresentationSection from '@/components/PresentationSection';
 import UniversesSection from '@/components/UniversesSection';
+import ParticulierView from '@/components/ParticulierView';
 import VisionSection from '@/components/VisionSection';
 import CorpusSection from '@/components/CorpusSection';
 import Footer from '@/components/Footer';
@@ -18,28 +19,45 @@ export default function HomePage() {
   const [introPhase, setIntroPhase] = useState<IntroPhase>('typing');
   const navbarLogoRef = useRef<HTMLDivElement | null>(null);
 
+  // Active Universe View state ('particulier' opens the dedicated universe interface)
+  const [activeUniverse, setActiveUniverse] = useState<'particulier' | null>(null);
+
   // Modals state
   const [contactModalOpen, setContactModalOpen] = useState(false);
   const [contactInitialSubject, setContactInitialSubject] = useState('Général');
-  const [selectedUniverse, setSelectedUniverse] = useState<'particulier' | 'coach' | 'david-ai' | null>(null);
+  const [previewUniverse, setPreviewUniverse] = useState<'coach' | 'david-ai' | null>(null);
 
   const handleOpenContact = (subject?: string) => {
     setContactInitialSubject(subject || 'Général');
     setContactModalOpen(true);
   };
 
-  const handleSelectUniverse = (universeKey: 'particulier' | 'coach' | 'david-ai') => {
-    setSelectedUniverse(universeKey);
+  const handleSelectUniverse = (universeKey: 'particulier' | 'coach' | 'david-ai' | null) => {
+    if (universeKey === 'particulier') {
+      // DO NOT SCROLL: Stay in place so the new universe constructs itself around the photo directly in front of the user
+      setActiveUniverse('particulier');
+    } else if (universeKey === 'coach' || universeKey === 'david-ai') {
+      setPreviewUniverse(universeKey);
+    } else {
+      setActiveUniverse(null);
+    }
   };
 
   const handleNavigateToSection = (sectionId: string) => {
-    const el = document.getElementById(sectionId);
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth' });
+    if (activeUniverse !== null) {
+      setActiveUniverse(null);
+      setTimeout(() => {
+        const el = document.getElementById(sectionId);
+        if (el) el.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+    } else {
+      const el = document.getElementById(sectionId);
+      if (el) el.scrollIntoView({ behavior: 'smooth' });
     }
   };
 
   const handleReplayIntro = () => {
+    setActiveUniverse(null);
     window.scrollTo({ top: 0, behavior: 'smooth' });
     setIntroCompleted(false);
     setIntroPhase('typing');
@@ -60,7 +78,17 @@ export default function HomePage() {
         />
       )}
 
-      {/* 2. The entire website exists already behind the intro. It unblurs progressively as the logo travels into place. */}
+      {/* 2. Top Navigation Bar (Always visible and functional) */}
+      <Navbar
+        logoRef={navbarLogoRef}
+        showLogoMark={introCompleted}
+        activeUniverse={activeUniverse}
+        onSelectUniverse={handleSelectUniverse}
+        onOpenContact={handleOpenContact}
+        onNavigateToSection={handleNavigateToSection}
+      />
+
+      {/* 3. Main Content Container with unblurring during intro */}
       <motion.div
         className="w-full flex-1 flex flex-col"
         animate={{
@@ -79,33 +107,22 @@ export default function HomePage() {
           },
         }}
       >
-        {/* Top Navigation Bar */}
-        <Navbar
-          logoRef={navbarLogoRef}
-          showLogoMark={introCompleted}
-          onOpenContact={handleOpenContact}
-          onNavigateToSection={handleNavigateToSection}
+        {/* Hero Section on pure white */}
+        <Hero
+          onExploreUniverses={() => handleNavigateToSection('univers')}
         />
 
-        {/* Main Landing Flow */}
-        <main className="flex-1">
-          {/* Hero Section */}
-          <Hero
-            onExploreUniverses={() => handleNavigateToSection('univers')}
-          />
+        {/* Presentation Section (Black bg, Apple-style copywriting) */}
+        <PresentationSection />
 
-          {/* Presentation Section (Black bg, white text, Apple-grade copy) */}
-          <PresentationSection />
+        {/* Three Universes Section with updated photos and compact cards */}
+        <UniversesSection onSelectUniverse={handleSelectUniverse} />
 
-          {/* Three Universes Section */}
-          <UniversesSection onSelectUniverse={handleSelectUniverse} />
+        {/* Vision Section */}
+        <VisionSection />
 
-          {/* Vision Section */}
-          <VisionSection />
-
-          {/* Final Corpus Section */}
-          <CorpusSection onOpenContact={handleOpenContact} />
-        </main>
+        {/* Final Corpus Section */}
+        <CorpusSection onOpenContact={handleOpenContact} />
 
         {/* Footer */}
         <Footer
@@ -115,6 +132,18 @@ export default function HomePage() {
         />
       </motion.div>
 
+      {/* 4. Immersive Particulier Universe View: Builds in place around the photo */}
+      <AnimatePresence>
+        {activeUniverse === 'particulier' && (
+          <ParticulierView
+            onBack={() => setActiveUniverse(null)}
+            onOpenContact={handleOpenContact}
+            onSelectCoach={() => setPreviewUniverse('coach')}
+            onSelectDavidAI={() => setPreviewUniverse('david-ai')}
+          />
+        )}
+      </AnimatePresence>
+
       {/* Contact Modal */}
       <ContactModal
         isOpen={contactModalOpen}
@@ -122,10 +151,10 @@ export default function HomePage() {
         initialSubject={contactInitialSubject}
       />
 
-      {/* Universe Preview Modal */}
+      {/* Universe Preview Modal for Coach & David AI */}
       <UniversePreviewModal
-        universeKey={selectedUniverse}
-        onClose={() => setSelectedUniverse(null)}
+        universeKey={previewUniverse}
+        onClose={() => setPreviewUniverse(null)}
         onOpenContact={handleOpenContact}
       />
 

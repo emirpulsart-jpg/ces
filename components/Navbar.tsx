@@ -8,6 +8,8 @@ interface NavbarProps {
   onNavigateToSection: (sectionId: string) => void;
   logoRef?: React.RefObject<HTMLDivElement | null>;
   showLogoMark?: boolean;
+  activeUniverse?: 'particulier' | 'coach' | 'david-ai' | null;
+  onSelectUniverse?: (universe: 'particulier' | 'coach' | 'david-ai' | null) => void;
 }
 
 export default function Navbar({
@@ -15,13 +17,34 @@ export default function Navbar({
   onNavigateToSection,
   logoRef,
   showLogoMark = true,
+  activeUniverse = null,
+  onSelectUniverse,
 }: NavbarProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const handleLinkClick = (id: string, e: React.MouseEvent) => {
     e.preventDefault();
     setMobileMenuOpen(false);
-    onNavigateToSection(id);
+
+    if (id === 'particulier') {
+      if (onSelectUniverse) {
+        onSelectUniverse('particulier');
+      }
+    } else {
+      if (activeUniverse !== null && onSelectUniverse) {
+        onSelectUniverse(null);
+      }
+      onNavigateToSection(id);
+    }
+  };
+
+  const handleHomeClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setMobileMenuOpen(false);
+    if (onSelectUniverse) {
+      onSelectUniverse(null);
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
@@ -31,10 +54,7 @@ export default function Navbar({
         {/* Zone 1: Logo & Brand */}
         <a
           href="#"
-          onClick={(e) => {
-            e.preventDefault();
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-          }}
+          onClick={handleHomeClick}
           className="flex items-center gap-3 shrink-0 group focus:outline-none"
         >
           {/* Target Logo Anchor for the intro flight */}
@@ -56,36 +76,41 @@ export default function Navbar({
           </span>
         </a>
 
-        {/* Zone 2: Links including "Accueil" as requested */}
+        {/* Zone 2: Links */}
         <nav className="hidden md:flex items-center gap-8 lg:gap-10 text-sm font-medium text-neutral-600">
           <a
             href="#"
-            onClick={(e) => {
-              e.preventDefault();
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }}
-            className="hover:text-black transition-colors whitespace-nowrap shrink-0 py-1"
+            onClick={handleHomeClick}
+            className={`transition-colors whitespace-nowrap shrink-0 py-1 ${
+              activeUniverse === null ? 'text-black font-semibold' : 'hover:text-black'
+            }`}
           >
             Accueil
           </a>
           <a
             href="#particulier"
             onClick={(e) => handleLinkClick('particulier', e)}
-            className="hover:text-black transition-colors whitespace-nowrap shrink-0 py-1"
+            className={`transition-colors whitespace-nowrap shrink-0 py-1 ${
+              activeUniverse === 'particulier' ? 'text-black font-semibold underline underline-offset-8' : 'hover:text-black'
+            }`}
           >
             Particulier
           </a>
           <a
             href="#coach"
             onClick={(e) => handleLinkClick('coach', e)}
-            className="hover:text-black transition-colors whitespace-nowrap shrink-0 py-1"
+            className={`transition-colors whitespace-nowrap shrink-0 py-1 ${
+              activeUniverse === 'coach' ? 'text-black font-semibold' : 'hover:text-black'
+            }`}
           >
             Coach
           </a>
           <a
             href="#david-ai"
             onClick={(e) => handleLinkClick('david-ai', e)}
-            className="hover:text-black transition-colors whitespace-nowrap shrink-0 py-1"
+            className={`transition-colors whitespace-nowrap shrink-0 py-1 ${
+              activeUniverse === 'david-ai' ? 'text-black font-semibold' : 'hover:text-black'
+            }`}
           >
             David AI
           </a>
@@ -130,19 +155,15 @@ export default function Navbar({
         <div className="md:hidden bg-white border-b border-neutral-200 px-6 py-5 flex flex-col gap-4 animate-in fade-in slide-in-from-top-2 duration-200">
           <a
             href="#"
-            onClick={(e) => {
-              e.preventDefault();
-              setMobileMenuOpen(false);
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }}
-            className="text-base font-medium text-neutral-900 py-1"
+            onClick={handleHomeClick}
+            className={`text-base font-medium py-1 ${activeUniverse === null ? 'text-black font-bold' : 'text-neutral-800'}`}
           >
             Accueil
           </a>
           <a
             href="#particulier"
             onClick={(e) => handleLinkClick('particulier', e)}
-            className="text-base font-medium text-neutral-800 py-1"
+            className={`text-base font-medium py-1 ${activeUniverse === 'particulier' ? 'text-black font-bold' : 'text-neutral-800'}`}
           >
             Particulier
           </a>

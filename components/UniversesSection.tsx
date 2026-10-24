@@ -83,12 +83,12 @@ export default function UniversesSection({ onSelectUniverse }: UniversesSectionP
             </div>
           </motion.div>
 
-          {/* Card 2: Kalibrium Coach */}
+          {/* Card 2: Kalibrium Coach (Noir & Bleu Électrique) */}
           <motion.div
             id="coach"
             whileHover={{ y: -4 }}
             transition={{ duration: 0.2 }}
-            className="flex flex-col justify-between bg-white text-neutral-900 p-7 sm:p-8 rounded-2xl relative overflow-hidden border border-neutral-200 shadow-xl group"
+            className="flex flex-col justify-between bg-[#0a0a0c] text-white p-7 sm:p-8 rounded-2xl relative overflow-hidden border border-neutral-800 shadow-xl group"
           >
             <div>
               {/* Universe tag */}
@@ -97,17 +97,17 @@ export default function UniversesSection({ onSelectUniverse }: UniversesSectionP
               </span>
 
               {/* Slogan */}
-              <h3 className="text-2xl font-bold text-neutral-950 mb-3 tracking-tight leading-snug">
+              <h3 className="text-2xl font-bold text-white mb-3 tracking-tight leading-snug">
                 Le suivi de tes clients. Optimisé par la science.
               </h3>
 
               {/* Description */}
-              <p className="text-sm text-neutral-600 font-normal leading-relaxed mb-6">
+              <p className="text-sm text-neutral-300 font-normal leading-relaxed mb-6">
                 Programme, suis et adapte l&apos;entraînement de tes clients depuis un espace conçu pour les coachs.
               </p>
 
-              {/* Photo 2: Coach holding tablet with athletes program (User Attachment image_21f9f513.png) */}
-              <div className="h-44 w-full bg-neutral-100 rounded-xl overflow-hidden relative mb-6 border border-neutral-200">
+              {/* Photo 2: Coach holding tablet with athletes program */}
+              <div className="h-44 w-full bg-neutral-900 rounded-xl overflow-hidden relative mb-6 border border-neutral-800">
                 <Image
                   src="/assets/aistudio/image_21f9f513.png"
                   alt="Kalibrium Coach"
@@ -122,10 +122,10 @@ export default function UniversesSection({ onSelectUniverse }: UniversesSectionP
             <div>
               <button
                 onClick={() => onSelectUniverse('coach')}
-                className="w-full py-3.5 px-6 bg-neutral-950 text-white hover:bg-[#0066ff] transition-colors text-sm font-semibold tracking-wide flex items-center justify-between rounded-xl cursor-pointer"
+                className="w-full py-3.5 px-6 bg-white text-black hover:bg-[#0066ff] hover:text-white transition-colors text-sm font-semibold tracking-wide flex items-center justify-between rounded-xl cursor-pointer"
               >
                 <span>Découvrir Coach</span>
-                <ArrowUpRight className="w-4 h-4 text-white" />
+                <ArrowUpRight className="w-4 h-4" />
               </button>
             </div>
           </motion.div>

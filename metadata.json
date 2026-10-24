@@ -1,0 +1,6 @@
+{
+  "name": "Kalibrium",
+  "description": "L'entraînement, guidé par la science. Un écosystème qui transforme les connaissances scientifiques en programmes d'entraînement personnalisés.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

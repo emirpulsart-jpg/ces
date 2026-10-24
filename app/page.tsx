@@ -68,18 +68,15 @@ export default function HomePage() {
             introCompleted || introPhase === 'done' || introPhase === 'traveling'
               ? 'blur(0px)'
               : introPhase === 'merging'
-              ? 'blur(22px)'
-              : 'blur(28px)',
-          opacity: introPhase === 'typing' && !introCompleted ? 0.35 : 1,
-          scale: introCompleted || introPhase === 'traveling' || introPhase === 'done' ? 1 : 0.99,
+              ? 'blur(20px)'
+              : 'blur(24px)',
+          opacity: 1,
         }}
         transition={{
           filter: {
-            duration: introPhase === 'traveling' ? 1.05 : 0.65,
+            duration: introPhase === 'traveling' ? 0.95 : 0.6,
             ease: [0.16, 1, 0.3, 1],
           },
-          opacity: { duration: 0.6, ease: 'easeOut' },
-          scale: { duration: 1.05, ease: [0.16, 1, 0.3, 1] },
         }}
       >
         {/* Top Navigation Bar */}

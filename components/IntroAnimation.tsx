@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { KalibriumMark } from './Logo';
 
@@ -23,68 +23,88 @@ export default function IntroAnimation({
   const [targetOffset, setTargetOffset] = useState<{ x: number; y: number; scale: number }>({
     x: -300,
     y: -300,
-    scale: 0.3,
+    scale: 0.29,
+  });
+
+  // Keep callback refs stable to prevent any re-render loops or timer resets
+  const onCompleteRef = useRef(onComplete);
+  const onPhaseChangeRef = useRef(onPhaseChange);
+
+  useEffect(() => {
+    onCompleteRef.current = onComplete;
+    onPhaseChangeRef.current = onPhaseChange;
   });
 
   // Calculate pixel-perfect coordinates to the navbar logo anchor
-  const updateTargetCoordinates = React.useCallback(() => {
+  const calculateTarget = React.useCallback(() => {
     if (targetRef && targetRef.current) {
       const rect = targetRef.current.getBoundingClientRect();
-      const targetCenterX = rect.left + rect.width / 2;
-      const targetCenterY = rect.top + rect.height / 2;
-      const screenCenterX = window.innerWidth / 2;
-      const screenCenterY = window.innerHeight / 2;
+      if (rect.width > 0 && rect.height > 0) {
+        const targetCenterX = rect.left + rect.width / 2;
+        const targetCenterY = rect.top + rect.height / 2;
+        const screenCenterX = window.innerWidth / 2;
+        const screenCenterY = window.innerHeight / 2;
 
-      const deltaX = targetCenterX - screenCenterX;
-      const deltaY = targetCenterY - screenCenterY;
-      const scale = rect.height / 110; // 110 is the base SVG dimension of the central logo
-
-      setTargetOffset({
-        x: deltaX,
-        y: deltaY,
-        scale: Math.max(0.24, Math.min(0.4, scale)),
-      });
+        return {
+          x: targetCenterX - screenCenterX,
+          y: targetCenterY - screenCenterY,
+          scale: rect.height / 110,
+        };
+      }
     }
+
+    // High-precision geometric fallback based on navbar geometry
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+    const paddingLeft = isMobile
+      ? 24
+      : Math.max(24, ((typeof window !== 'undefined' ? window.innerWidth : 1280) - 1280) / 2 + 48);
+    const targetX = paddingLeft + 16;
+    const targetY = 40; // 80px navbar height centered
+    const screenCenterX = (typeof window !== 'undefined' ? window.innerWidth : 1280) / 2;
+    const screenCenterY = (typeof window !== 'undefined' ? window.innerHeight : 800) / 2;
+
+    return {
+      x: targetX - screenCenterX,
+      y: targetY - screenCenterY,
+      scale: 32 / 110,
+    };
   }, [targetRef]);
 
+  // Sync phase change to parent without triggering timer resets
   useEffect(() => {
-    updateTargetCoordinates();
-    window.addEventListener('resize', updateTargetCoordinates);
-    return () => window.removeEventListener('resize', updateTargetCoordinates);
-  }, [updateTargetCoordinates]);
+    onPhaseChangeRef.current(phase);
+  }, [phase]);
 
-  useEffect(() => {
-    onPhaseChange(phase);
-  }, [phase, onPhaseChange]);
-
+  // Single deterministic timer lifecycle: guaranteed to execute once and terminate cleanly
   useEffect(() => {
     // Phase 1: Letters appear -> start merging into logo
     const timer1 = setTimeout(() => {
       setPhase('merging');
-    }, 1200);
+    }, 1100);
 
-    // Phase 2: Logo formed at center -> start traveling to navbar while site unblurs
+    // Phase 2: Logo formed at center -> measure target and start traveling
     const timer2 = setTimeout(() => {
-      updateTargetCoordinates();
+      const target = calculateTarget();
+      setTargetOffset(target);
       setPhase('traveling');
-    }, 2200);
+    }, 2000);
 
-    // Phase 3: Logo arrived -> handoff cleanly to navbar
+    // Phase 3: Logo arrived at navbar -> complete and unmount
     const timer3 = setTimeout(() => {
       setPhase('done');
-      onComplete();
-    }, 3300);
+      onCompleteRef.current();
+    }, 3100);
 
     return () => {
       clearTimeout(timer1);
       clearTimeout(timer2);
       clearTimeout(timer3);
     };
-  }, [onComplete, updateTargetCoordinates]);
+  }, [calculateTarget]);
 
   const handleSkip = () => {
     setPhase('done');
-    onComplete();
+    onCompleteRef.current();
   };
 
   if (phase === 'done') {
@@ -103,7 +123,7 @@ export default function IntroAnimation({
           opacity: phase === 'typing' ? 1 : 0,
         }}
         transition={{
-          duration: 0.8,
+          duration: 0.75,
           ease: [0.16, 1, 0.3, 1],
         }}
         className="absolute inset-0 bg-black pointer-events-auto"
@@ -125,7 +145,7 @@ export default function IntroAnimation({
                       scale: 0.3,
                       opacity: 0,
                       filter: 'blur(10px)',
-                      transition: { duration: 0.7, ease: [0.32, 0.72, 0, 1] },
+                      transition: { duration: 0.65, ease: [0.32, 0.72, 0, 1] },
                     }
                   : { opacity: 1 }
               }
@@ -137,8 +157,8 @@ export default function IntroAnimation({
                   initial={{ opacity: 0, y: 14 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{
-                    delay: 0.1 + idx * 0.08,
-                    duration: 0.3,
+                    delay: 0.08 + idx * 0.07,
+                    duration: 0.28,
                     ease: [0.16, 1, 0.3, 1],
                   }}
                   className="font-bold text-3xl sm:text-5xl md:text-6xl text-white tracking-widest uppercase font-sans"
@@ -174,12 +194,12 @@ export default function IntroAnimation({
               transition={
                 isTraveling
                   ? {
-                      x: { duration: 1.05, ease: [0.16, 1, 0.3, 1] },
-                      y: { duration: 1.05, ease: [0.16, 1, 0.3, 1] },
-                      scale: { duration: 1.05, ease: [0.16, 1, 0.3, 1] },
+                      x: { duration: 0.95, ease: [0.16, 1, 0.3, 1] },
+                      y: { duration: 0.95, ease: [0.16, 1, 0.3, 1] },
+                      scale: { duration: 0.95, ease: [0.16, 1, 0.3, 1] },
                     }
                   : {
-                      duration: 0.65,
+                      duration: 0.6,
                       ease: [0.16, 1, 0.3, 1],
                     }
               }
